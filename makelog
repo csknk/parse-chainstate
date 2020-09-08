@@ -1,0 +1,1 @@
+g++ -W -Wall -std=c++17 -g -o bin/main main.cpp -lleveldb
