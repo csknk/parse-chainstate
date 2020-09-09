@@ -3,16 +3,28 @@
 
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 #include "utilities.h"
+#include "leveldb/db.h"
+
 
 class DBWrapper {
 private:
-	const std::string obfuscationKeyKey;
+	std::string obfuscationKeyKey;
 	std::vector<unsigned char> obfuscationKey;
+	leveldb::Options options;
+	std::string dbName;
+	leveldb::ReadOptions readoptions;
+	leveldb::DB* db;
+	void checkStatus(leveldb::Status status, std::string msg);
+	void setObfuscationKey();
+	void openDB();
 
 public:
 	DBWrapper();
-	void setObfuscationKey();
+	DBWrapper(std::string dbName);
+	void setDBName(const std::string& s);
+	void read(std::string const& key, std::string& val);
 };
 
 

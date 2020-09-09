@@ -2,6 +2,6 @@
 
 int main(int argc, char* argv[])
 {
-	DBWrapper db;
+	DBWrapper db("chainstate");
 	return EXIT_SUCCESS;
 }

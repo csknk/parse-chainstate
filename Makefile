@@ -1,8 +1,3 @@
-# Makefile to compile and link all C++ files in the current directory, such that each C++
-# file results in a unique executable.
-#
-# This is useful for experimentation, testing and small-scale projects.
-# 
 # Copyright (c) David Egan 2020
 # SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -16,29 +11,29 @@ LDFLAGS =
 LDLIBS = -lleveldb -lsnappy -lpthread
 CXX = g++ ${CXXFLAGS}
 SRCS = $(wildcard *.cpp)
-EXECUTABLE_FILES = $(SRCS:%.cpp=$(BIN_DIR)/%)
+#EXECUTABLE_FILES = $(SRCS:%.cpp=$(BIN_DIR)/%)
+EXECUTABLE_FILES = $(BIN_DIR)/main
 OBJECT_FILES = $(SRCS:%.cpp=$(OBJS_DIR)/%.o)
 
 
 .PHONY: all
 all: $(EXECUTABLE_FILES)
 
-$(BIN_DIR)/%: $(OBJS_DIR)/%.o
-	$(info Building executable from object file "$(OBJS_DIR)/%.o")
+#$(BIN_DIR)/%: $(OBJS_DIR)/%.o
+$(BIN_DIR)/main: $(OBJECT_FILES) 
+	$(info Building executable from object file "$(OBJS_DIR)/$(^)")
 	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 .PRECIOUS: $(OBJS_DIR)/%.o
 
-$(OBJS_DIR)/%.o: %.cpp
+$(OBJS_DIR)/%.o: %.cpp 
 	$(info Building object file for "$(<)")
 	@mkdir -p $(@D)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 
 # Specify if header files need to be linked with referenced object files
-#$(OBJS_DIR)/main.o: 
-#$(OBJS_DIR)/selection-sort.o: util.h
-#$(OBJS_DIR)/merge-sort-simple.o: util.h
+$(OBJS_DIR)/DBWrapper.o: utilities.h
 
 .PHONY: clean
 clean:
