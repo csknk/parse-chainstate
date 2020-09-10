@@ -4,9 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
-#include "utilities.h"
 #include "leveldb/db.h"
-
 
 class DBWrapper {
 private:
@@ -16,16 +14,19 @@ private:
 	std::string dbName;
 	leveldb::ReadOptions readoptions;
 	leveldb::DB* db;
-	void checkStatus(leveldb::Status status, std::string msg);
+	leveldb::Status status;
+	void checkStatus(std::string msg);
 	void setObfuscationKey();
 	void openDB();
+	void deObfuscate(leveldb::Slice bytes, std::vector<unsigned char>& plaintext); 
 
 public:
 	DBWrapper();
 	DBWrapper(std::string dbName);
 	void setDBName(const std::string& s);
 	void read(std::string const& key, std::string& val);
+	void outputAllKeyVals();
+	void fetchRecord(const std::string& key, std::string& value);
 };
-
 
 #endif /* DBWRAPPER_H */
