@@ -1,5 +1,8 @@
 # Access Bitcoin UTXO Set With the Bitcoin Core chainstate Database 
+C++ project to access Bitcoin UTXO data by parsing the `chainstate` database.
 
+UTXOs
+-----
 The Unspent Transaction Output (UTXO) set is a subset of Bitcoin transaction outputs that are not yet spent.
 
 For a new transaction to be valid, it must have access to UTXOs that can be used as inputs - the creator of the transaction must be able to meet the spending conditions of the transaction input UTXOs. Transactions consume UTXOs as inputs and create new UTXOs as outputs - with spending conditions locked such that the intended recipient can unlock the new UTXOs
@@ -18,7 +21,7 @@ Bitcoin Core stores UTXO data in the `chainstate` LevelDB database. Data is stor
 
 References
 ----------
-* [Project docs][1]
+* [LevelDB Project docs][1] - not very useful
 
 [1]: https://github.com/google/leveldb/blob/master/doc/index.md
 
