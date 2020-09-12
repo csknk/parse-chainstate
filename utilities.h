@@ -54,7 +54,8 @@ int hexDigitToInt(char digit)
 	return -1;
 }
 
-int hexstringToBytes(std::string const&	hexstring, std::vector<unsigned char>& result)
+template <typename T>
+int hexstringToBytes(std::string const&	hexstring, T& result)
 {
 	if (hexstring.size() % 2) {
 		std::cerr << "The hexstring is not an even number of characters.\n";

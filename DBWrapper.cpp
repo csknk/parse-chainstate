@@ -84,17 +84,26 @@ void DBWrapper::outputAllKeyVals()
 	delete it;
 }
 
-void DBWrapper::fetchRecord(const std::string& key, std::string& value)
+void DBWrapper::fetchRecord(const std::string& txid, std::string& value)
 {
+	std::vector<char> keyBytes;
+	utilities::hexstringToBytes(txid, keyBytes);
+	utilities::switchEndianness(keyBytes);
+	keyBytes.insert(keyBytes.begin(), 0x43);
+	keyBytes.insert(keyBytes.end(), 0x00); // vout
+	leveldb::Slice keySlice(keyBytes.data(), keyBytes.size());
 	std::string rawVal;
-	status = db->Get(readoptions, key, &rawVal);
-	if (!status.ok()) {
+	
+	status = db->Get(readoptions, keySlice, &rawVal);
+		if (!status.ok()) {
 		throw std::invalid_argument("Key not found.");
 	}
-	std::vector<unsigned char> valBytes, deObBytes;
-	utilities::stringToHexBytes(rawVal, valBytes);
-	deObfuscate(valBytes, deObBytes);
-	utilities::bytesToHexstring(deObBytes, value);	
+	
+	std::vector<unsigned char> deObBytes;
+	deObfuscate(rawVal, deObBytes);
+	utilities::bytesToHexstring(deObBytes, value);
+	std::cout << "txid: " << txid << "\n";
+	std::cout << value << "\n";	
 }
 
 /**
@@ -102,10 +111,10 @@ void DBWrapper::fetchRecord(const std::string& key, std::string& value)
  * The obfuscation repeats as necessary.
  *
  * */
-void DBWrapper::deObfuscate(leveldb::Slice bytes, std::vector<unsigned char>& plaintext)
-{
-	for (size_t i = 0, j = 0; i < bytes.size(); i++) {
-		plaintext.push_back(obfuscationKey[j++] ^ bytes[i]);
-		if (j == obfuscationKey.size()) j = 0;	
-	}
-}
+//void DBWrapper::deObfuscate(leveldb::Slice bytes, std::vector<unsigned char>& plaintext)
+//{
+//	for (size_t i = 0, j = 0; i < bytes.size(); i++) {
+//		plaintext.push_back(obfuscationKey[j++] ^ bytes[i]);
+//		if (j == obfuscationKey.size()) j = 0;	
+//	}
+//}

@@ -18,7 +18,20 @@ private:
 	void checkStatus(std::string msg);
 	void setObfuscationKey();
 	void openDB();
-	void deObfuscate(leveldb::Slice bytes, std::vector<unsigned char>& plaintext); 
+	
+	/**
+	 * XOR `bytes` against the corresponding byte in the obfuscation key.
+	 * The obfuscation repeats as necessary.
+	 *
+	 * */
+	template <typename T>
+	void deObfuscate(T bytes, std::vector<unsigned char>& plaintext)
+	{
+		for (size_t i = 0, j = 0; i < bytes.size(); i++) {
+			plaintext.push_back(obfuscationKey[j++] ^ bytes[i]);
+			if (j == obfuscationKey.size()) j = 0;	
+		}
+	}	
 
 public:
 	DBWrapper();
