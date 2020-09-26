@@ -3,26 +3,33 @@
 
 DBWrapper::DBWrapper(std::string _dbName) : dbName(_dbName)
 {
-	std::cout << "constructor...\n";
 	openDB();
 	setObfuscationKey();
 }
 
+DBWrapper::~DBWrapper()
+{
+	delete db;
+}
+
 void DBWrapper::setObfuscationKey()
 {
-	std::cout << "set key...\n";
+	// Build the key needed to fetch the obfuscation key: `obfuscationKeyKey`.
+	// This is stored as a value in the database.
 	obfuscationKeyKey = {0x0e , 0x00};
 	obfuscationKeyKey += "obfuscate_key";
+	
 	std::string obfuscationKeyString;
 	read(obfuscationKeyKey, obfuscationKeyString);
 	utilities::stringToHexBytes(obfuscationKeyString, obfuscationKey);
+
+	// The first character of the obfuscationKey is 0x08 and should be removed.
 	obfuscationKey.erase(obfuscationKey.begin());
 	utilities::printToHex(obfuscationKey);
 }
 
 void DBWrapper::openDB()
 {
-	std::cout << "opening DB...\n";
 	if (dbName.empty()) {
 		throw std::invalid_argument{"No database specified in DBWrapper::openDB()"};
 	}
@@ -38,7 +45,6 @@ void DBWrapper::setDBName(const std::string& s)
 
 void DBWrapper::read(std::string const& key, std::string& val)
 {
-	std::cout << "read...\n";
 	status = db->Get(readoptions, key, &val);
 	checkStatus("Error reading obfuscation key");
 }
@@ -84,7 +90,7 @@ void DBWrapper::outputAllKeyVals()
 	delete it;
 }
 
-void DBWrapper::fetchRecord(const std::string& txid, std::string& value)
+void DBWrapper::fetchRecord(const std::string& txid, std::vector<unsigned char>& value)
 {
 	std::vector<char> keyBytes;
 	utilities::hexstringToBytes(txid, keyBytes);
@@ -99,22 +105,12 @@ void DBWrapper::fetchRecord(const std::string& txid, std::string& value)
 		throw std::invalid_argument("Key not found.");
 	}
 	
-	std::vector<unsigned char> deObBytes;
-	deObfuscate(rawVal, deObBytes);
-	utilities::bytesToHexstring(deObBytes, value);
-	std::cout << "txid: " << txid << "\n";
-	std::cout << value << "\n";	
+	deObfuscate(rawVal, value);
 }
 
-/**
- * XOR `bytes` against the corresponding byte in the obfuscation key.
- * The obfuscation repeats as necessary.
- *
- * */
-//void DBWrapper::deObfuscate(leveldb::Slice bytes, std::vector<unsigned char>& plaintext)
-//{
-//	for (size_t i = 0, j = 0; i < bytes.size(); i++) {
-//		plaintext.push_back(obfuscationKey[j++] ^ bytes[i]);
-//		if (j == obfuscationKey.size()) j = 0;	
-//	}
-//}
+void DBWrapper::fetchRecord(const std::string& txid, std::string& value)
+{
+	std::vector<unsigned char> deObBytes;
+	fetchRecord(txid, deObBytes);
+	utilities::bytesToHexstring(deObBytes, value);
+}

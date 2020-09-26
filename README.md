@@ -5,7 +5,7 @@ UTXOs
 -----
 The Unspent Transaction Output (UTXO) set is a subset of Bitcoin transaction outputs that are not yet spent.
 
-For a new transaction to be valid, it must have access to UTXOs that can be used as inputs - the creator of the transaction must be able to meet the spending conditions of the transaction input UTXOs. Transactions consume UTXOs as inputs and create new UTXOs as outputs - with spending conditions locked such that the intended recipient can unlock the new UTXOs
+For a new transaction to be valid, it must have access to UTXOs that can be used as inputs - the creator of the transaction must be able to meet the spending conditions of the transaction input UTXOs. Transactions consume UTXOs as inputs and create new UTXOs as outputs - with spending conditions locked such that the intended recipient can unlock the new UTXOs.
 
 The UTXO set contains all unspent outputs - it therefore contains all the data necessary to validate new transactions.
 

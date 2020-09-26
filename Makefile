@@ -16,10 +16,9 @@ OBJECT_FILES = $(SRCS:%.cpp=$(OBJS_DIR)/%.o)
 
 .PHONY: all
 #all: $(EXECUTABLE_FILES)
-all: main $(OBJS_DIR)/DBWrapper.o $(OBJS_DIR)/ob-test.o
+all: main $(OBJS_DIR)/DBWrapper.o $(OBJS_DIR)/main.o
 
-main: $(OBJS_DIR)/DBWrapper.o $(OBJS_DIR)/ob-test.o
-#	$(info Building executable from object file "$(OBJS_DIR)/$(^)")
+main: $(OBJS_DIR)/DBWrapper.o $(OBJS_DIR)/main.o
 	$(info Building executable from object file "$(^)")
 	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)/$@ $^ $(LDLIBS)
 
@@ -30,14 +29,14 @@ $(OBJS_DIR)/DBWrapper.o: DBWrapper.cpp
 	@mkdir -p $(@D)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(OBJS_DIR)/ob-test.o: ob-test.cpp
+$(OBJS_DIR)/main.o: main.cpp
 	$(info Building object file for "$(<)")
 	@mkdir -p $(@D)
 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 
 # Specify if header files need to be linked with referenced object files
-#$(OBJS_DIR)/DBWrapper.o: DBWrapper.h utilities.h
+# $(OBJS_DIR)/DBWrapper.o: DBWrapper.h utilities.h
 
 .PHONY: clean
 clean:
