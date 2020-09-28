@@ -1,5 +1,5 @@
 #include "DBWrapper.h"
-//#include "utilities.h"
+#include <iomanip>
 
 int main(int argc, char* argv[])
 {
@@ -8,16 +8,22 @@ int main(int argc, char* argv[])
 		db.outputAllKeyVals();
 		return EXIT_SUCCESS;
 	}
-//	db.outputAllKeyVals();
 	std::cout << "Enter a txid:";
 	std::string txid;
 	std::cin >> txid;
 	std::string val;
-	db.fetchRecord(txid, val);
+
+	// DBWrapper::fetchRecord() is overloaded.
+	// Pass in a string or a std::vector<unsigned char>.
+	db.fetchRecord(txid, 0x00, 0x00,0x00,  val);
 	std::cout << "value: " << val << "\n";
 
 	std::vector<unsigned char> valueBytes;
-	db.fetchRecord(txid, valueBytes);
-//	utilities::printToHex(valueBytes);
+	db.fetchRecord(txid, 0x00, valueBytes);
+
+	for (const auto& el : valueBytes) {
+		std::cout << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << (int)el;
+	}
+	std::cout << std::dec << "\n";
 	return EXIT_SUCCESS;
 }

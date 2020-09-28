@@ -15,7 +15,8 @@ DBWrapper::~DBWrapper()
 void DBWrapper::setObfuscationKey()
 {
 	// Build the key needed to fetch the obfuscation key: `obfuscationKeyKey`.
-	// This is stored as a value in the database.
+	// This is stored as a value in the database with the byte values {0x0e, 0x00}
+	// prepended to the string "obfuscate_key".
 	obfuscationKeyKey = {0x0e , 0x00};
 	obfuscationKeyKey += "obfuscate_key";
 	
@@ -23,7 +24,7 @@ void DBWrapper::setObfuscationKey()
 	read(obfuscationKeyKey, obfuscationKeyString);
 	utilities::stringToHexBytes(obfuscationKeyString, obfuscationKey);
 
-	// The first character of the obfuscationKey is 0x08 and should be removed.
+	// The first character of the retrieved obfuscationKey is 0x08 and should be removed.
 	obfuscationKey.erase(obfuscationKey.begin());
 	utilities::printToHex(obfuscationKey);
 }
@@ -90,13 +91,22 @@ void DBWrapper::outputAllKeyVals()
 	delete it;
 }
 
-void DBWrapper::fetchRecord(const std::string& txid, std::vector<unsigned char>& value)
+/**
+ * Fetch a record from the LevelDB database chainstate.
+ *
+ * The key should be a little-endian representation of the txid bytes, prepended by the byte 0x43
+ * and appended with the value of the vout of the specific UTXO.
+ *
+ * uint32_t seems like overkill for the vout data-type, but this is the type used by Core -
+ * see: https://developer.bitcoin.org/reference/transactions.html
+ * */
+void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, std::vector<unsigned char>& value)
 {
 	std::vector<char> keyBytes;
 	utilities::hexstringToBytes(txid, keyBytes);
 	utilities::switchEndianness(keyBytes);
 	keyBytes.insert(keyBytes.begin(), 0x43);
-	keyBytes.insert(keyBytes.end(), 0x00); // vout
+	keyBytes.insert(keyBytes.end(), (unsigned char)vout); // vout
 	leveldb::Slice keySlice(keyBytes.data(), keyBytes.size());
 	std::string rawVal;
 	
@@ -108,9 +118,9 @@ void DBWrapper::fetchRecord(const std::string& txid, std::vector<unsigned char>&
 	deObfuscate(rawVal, value);
 }
 
-void DBWrapper::fetchRecord(const std::string& txid, std::string& value)
+void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, std::string& value)
 {
 	std::vector<unsigned char> deObBytes;
-	fetchRecord(txid, deObBytes);
+	fetchRecord(txid, vout, deObBytes);
 	utilities::bytesToHexstring(deObBytes, value);
 }

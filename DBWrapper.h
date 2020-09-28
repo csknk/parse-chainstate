@@ -45,8 +45,8 @@ class DBWrapper {
 		void setDBName(const std::string& s);
 		void read(std::string const& key, std::string& val);
 		void outputAllKeyVals();
-		void fetchRecord(const std::string& key, std::string& value);
-		void fetchRecord(const std::string& key, std::vector<unsigned char>& value);
+		void fetchRecord(const std::string& key, const uint32_t vout, std::string& value);
+		void fetchRecord(const std::string& key, const uint32_t vout, std::vector<unsigned char>& value);
 };
 
 /**

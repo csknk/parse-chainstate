@@ -1,0 +1,3 @@
+[submodule "bitcoin-varint"]
+	path = bitcoin-varint
+	url = https://github.com/csknk/bitcoin-varint.git
