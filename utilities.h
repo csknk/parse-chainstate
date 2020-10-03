@@ -17,7 +17,7 @@ void printToHex(T s)
 	for(size_t i = 0; i < s.size(); i++) {
 		std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)s[i];
 	}
-	std::cout << "\n";
+	std::cout << std::dec << "\n";
 }
 
 /**

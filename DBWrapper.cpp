@@ -12,21 +12,21 @@ DBWrapper::~DBWrapper()
 	delete db;
 }
 
+/**
+ * Build the key needed to fetch the obfuscation key: `obfuscationKeyKey`.
+ *
+ * This is stored as a value in the database with the byte values {0x0e, 0x00}
+ * prepended to the string "obfuscate_key".
+ * The first character of the retrieved obfuscationKey is 0x08 and should be removed.
+ * */
 void DBWrapper::setObfuscationKey()
 {
-	// Build the key needed to fetch the obfuscation key: `obfuscationKeyKey`.
-	// This is stored as a value in the database with the byte values {0x0e, 0x00}
-	// prepended to the string "obfuscate_key".
-	obfuscationKeyKey = {0x0e , 0x00};
+	obfuscationKeyKey = {0x0e, 0x00};
 	obfuscationKeyKey += "obfuscate_key";
-	
 	std::string obfuscationKeyString;
 	read(obfuscationKeyKey, obfuscationKeyString);
 	utilities::stringToHexBytes(obfuscationKeyString, obfuscationKey);
-
-	// The first character of the retrieved obfuscationKey is 0x08 and should be removed.
 	obfuscationKey.erase(obfuscationKey.begin());
-	utilities::printToHex(obfuscationKey);
 }
 
 void DBWrapper::openDB()
@@ -60,16 +60,19 @@ void DBWrapper::checkStatus(std::string msg)
 	
 }
 
-void DBWrapper::outputAllKeyVals()
+/**
+ * The first 32 bytes of txidvout is txid, the remaining bytes are a varint representing the vout. 
+ *
+ * */
+void DBWrapper::outputAllKeyVals(std::tuple<BytesVec, BytesVec, BytesVec> result) 
 {
 	leveldb::Iterator* it = db->NewIterator(readoptions);
 	for (it->SeekToFirst(); it->Valid(); it->Next()) {
-
-		std::vector<unsigned char> deObfuscatedKey;
-		std::vector<unsigned char> deObfuscatedValue;
+		BytesVec deObfuscatedKey;
+		BytesVec deObfuscatedValue;
 		deObfuscate(it->value(), deObfuscatedValue);
 		std::cout << "KEY: ";
-		std::vector<unsigned char> key;
+		BytesVec key;
 		for (size_t i = 0; i < it->key().size(); i++) {
 			key.push_back(it->key()[i]);
 		} 
@@ -78,13 +81,12 @@ void DBWrapper::outputAllKeyVals()
 		utilities::printToHex(deObfuscatedValue);
 		std::cout << "\n";
 		if (key[0] == 0x43) {
-			std::vector<unsigned char> txid;
+			BytesVec txid;
 			txid.insert(txid.begin(), key.begin() + 1, key.end() - 1);
 			utilities::switchEndianness(txid);
 			std::cout << "txid: ";
 			utilities::printToHex(txid);
 			std::cout << "\n";
-	
 		}
 	}
 	assert(it->status().ok());
@@ -100,7 +102,7 @@ void DBWrapper::outputAllKeyVals()
  * uint32_t seems like overkill for the vout data-type, but this is the type used by Core -
  * see: https://developer.bitcoin.org/reference/transactions.html
  * */
-void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, std::vector<unsigned char>& value)
+void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, BytesVec& value)
 {
 	std::vector<char> keyBytes;
 	utilities::hexstringToBytes(txid, keyBytes);
@@ -120,7 +122,7 @@ void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, std::v
 
 void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, std::string& value)
 {
-	std::vector<unsigned char> deObBytes;
+	BytesVec deObBytes;
 	fetchRecord(txid, vout, deObBytes);
 	utilities::bytesToHexstring(deObBytes, value);
 }
