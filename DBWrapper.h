@@ -5,12 +5,9 @@
 #include <vector>
 #include <stdexcept>
 #include "leveldb/db.h"
+#include "varint.h"
 
 typedef std::vector<unsigned char> BytesVec;
-
-struct Coin {
-
-};
 
 class DBWrapper {
 	private:

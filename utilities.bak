@@ -4,8 +4,6 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <string>
-#include <sstream>
 
 namespace utilities {
 
@@ -14,7 +12,7 @@ namespace utilities {
  *
  * */
 template <typename T>
-inline void printToHex(T s)
+void printToHex(T s)
 {
 	for(size_t i = 0; i < s.size(); i++) {
 		std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)s[i];
@@ -23,23 +21,10 @@ inline void printToHex(T s)
 }
 
 /**
- *
- * */
-template <typename T>
-inline std::ostream& printToHex(std::ostream& os, T s)
-{
-	for(size_t i = 0; i < s.size(); i++) {
-		os << std::hex << std::setfill('0') << std::setw(2) << (int)s[i];
-	}
-	os << std::dec;
-	return os;
-}
-
-/**
  * Print collection of bytes as a hexadecimal string.
  *
  * */
-inline void stringToHexBytes(const std::string& s, std::vector<unsigned char>& hexBytes)
+void stringToHexBytes(const std::string& s, std::vector<unsigned char>& hexBytes)
 {
 	for (size_t i = 0; i < s.size(); i++) {
 		if ((unsigned char)s[i] == 0xff) continue;
@@ -48,7 +33,7 @@ inline void stringToHexBytes(const std::string& s, std::vector<unsigned char>& h
 }
 
 template <typename T>
-inline void switchEndianness(T& collection)
+void switchEndianness(T& collection)
 {
 	size_t i = 0, j = collection.size() - 1;
 	while (i < collection.size() / 2) {
@@ -58,7 +43,7 @@ inline void switchEndianness(T& collection)
 	}	
 }
 
-inline int hexDigitToInt(char digit)
+int hexDigitToInt(char digit)
 {
 	digit = tolower(digit);
 	if (digit >= '0' && digit <='9')
@@ -70,7 +55,7 @@ inline int hexDigitToInt(char digit)
 }
 
 template <typename T>
-inline int hexstringToBytes(std::string const&	hexstring, T& result)
+int hexstringToBytes(std::string const&	hexstring, T& result)
 {
 	if (hexstring.size() % 2) {
 		std::cerr << "The hexstring is not an even number of characters.\n";
@@ -92,41 +77,13 @@ inline int hexstringToBytes(std::string const&	hexstring, T& result)
 	return resultLength;
 }
 
-inline void bytesToHexstring(const std::vector<unsigned char>& bytes, std::string& s)
+void bytesToHexstring(const std::vector<unsigned char>& bytes, std::string& s)
 {
 	std::stringstream ss;
 	for (auto b : bytes) {
 		ss << std::hex << std::setfill('0') << std::setw(2) << (int)b;
 	}
 	s = ss.str();
-}
-
-inline void bytesToDecimal(const std::vector<unsigned char>& bytes, std::string& result)
-{
-	size_t resultLen = bytes.size() * 3;
-	std::vector<unsigned char> decimal(resultLen, 0);
-	ssize_t resultIndex;
-
-	for (size_t i = 0; i < bytes.size(); i++) {
-		uint32_t carry = bytes[i];
-		resultIndex = resultLen - 1;
-		while (carry || resultIndex >= 0) {
-			carry += 256 * decimal[resultIndex];
-			decimal[resultIndex] = carry % 10;
-			carry /= 10;
-			resultIndex--;
-		}
-	}
-	std::stringstream ss;
-	bool leadingZero = true;
-	for (auto el : decimal) {
-		if (leadingZero && el == 0) {
-			continue;
-		}
-		leadingZero = false;
-		ss << (int)el;
-	}
-	result = ss.str();
 }
 
 } // utilities

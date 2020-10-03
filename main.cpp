@@ -6,8 +6,7 @@ int main(int argc, char* argv[])
 {
 	DBWrapper db("chainstate-2");
 	if (argc == 2 && strcmp(argv[1], "true") == 0) {
-//		db.outputAllKeyVals();
-//		std::vector<Coin> utxos;
+//		db.outputAllKeyVals(); // send in a vector of UTXOs by reference, fill this in in the DB loop
 //		db.outputAllKeyVals();
 		return EXIT_SUCCESS;
 	}
