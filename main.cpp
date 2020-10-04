@@ -1,13 +1,18 @@
 #include <iomanip>
 #include "DBWrapper.h"
-#include "bitcoin-varint/varint.h"
+#include "varint.h"
 
 int main(int argc, char* argv[])
 {
 	DBWrapper db("chainstate-2");
 	if (argc == 2 && strcmp(argv[1], "true") == 0) {
-//		db.outputAllKeyVals(); // send in a vector of UTXOs by reference, fill this in in the DB loop
-//		db.outputAllKeyVals();
+		std::vector<UTXO> utxos;
+	       	db.getAllUTXOs(utxos);
+		for (auto el : utxos) {
+//			utilities::printToHex(el.txid);
+			std::cout << el << "\n";
+		}
+		std::cout << utxos.size() << " UTXOs\n";
 		return EXIT_SUCCESS;
 	}
 	std::cout << "Enter a txid:";

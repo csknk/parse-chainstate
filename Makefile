@@ -26,17 +26,17 @@ main: $(OBJS_DIR)/DBWrapper.o $(OBJS_DIR)/main.o $(OBJS_DIR)/varint.o
 $(OBJS_DIR)/DBWrapper.o: DBWrapper.cpp
 	$(info Building object file for "$(<)")
 	@mkdir -p $(@D)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+	@$(CXX) -o $@ -c $<
 
 $(OBJS_DIR)/varint.o: varint.cpp
 	$(info Building object file for "$(<)")
 	@mkdir -p $(@D)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+	@$(CXX) -o $@ -c $<
 
 $(OBJS_DIR)/main.o: main.cpp
 	$(info Building object file for "$(<)")
 	@mkdir -p $(@D)
-	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+	@$(CXX) -o $@ -c $<
 
 .PHONY: clean
 clean:

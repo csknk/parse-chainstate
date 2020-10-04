@@ -23,6 +23,19 @@ inline void printToHex(T s)
 }
 
 /**
+ * Stream a collection as hexadecimal values.
+ *
+ * */
+template <typename T>
+inline std::ostream& streamToHex(T s, std::ostream& os)
+{
+	for(size_t i = 0; i < s.size(); i++) {
+		os << std::hex << std::setfill('0') << std::setw(2) << (int)s[i];
+	}
+	os << std::dec;
+	return os;
+}
+/**
  *
  * */
 template <typename T>
@@ -92,7 +105,8 @@ inline int hexstringToBytes(std::string const&	hexstring, T& result)
 	return resultLength;
 }
 
-inline void bytesToHexstring(const std::vector<unsigned char>& bytes, std::string& s)
+template <typename T>
+inline void bytesToHexstring(const T& bytes, std::string& s)
 {
 	std::stringstream ss;
 	for (auto b : bytes) {

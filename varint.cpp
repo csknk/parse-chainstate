@@ -10,6 +10,17 @@ UTXO::UTXO(Varint<std::vector<unsigned char>>& _inputValue)
 	setScriptPubKey();
 }
 
+UTXO::UTXO(const UTXO& src)
+{
+	txid = src.txid;	
+	height = src.height;
+	coinbase = src.coinbase;
+	scriptPubKey = src.scriptPubKey;
+	amount = src.amount;
+	scriptType = src.scriptType;
+	inputValue = src.inputValue;
+}
+
 void UTXO::setHeight()
 {
 	std::vector<unsigned char> first;
@@ -142,17 +153,53 @@ uint64_t UTXO::DecompressAmount(uint64_t x)
 	return n;
 }
 
+void UTXO::scriptDescription(size_t type, std::string& desc)
+{
+	/** Map scriptType to string **/
+	static const char* scriptDescription[] = {
+		"P2PKH",
+		"P2SH",
+		"P2PK: data is a compressed public key, y = even",
+	};
+
+	if (type > 2) {
+		desc = "Unknown script type.";
+	} else {
+		desc = scriptDescription[type];	
+	}
+}
+
 void UTXO::printUTXO()
 {
 	std::cout << "Block height:\t" << height << "\n";
 	std::cout << "Coinbase:\t" << (coinbase ? "true" : "false") << "\n";
 }
 
+void UTXO::getDbValue(std::string& dbValue)
+{
+	std::string s;
+	std::vector<unsigned char> b;
+	inputValue.getInputBytes(b);
+	utilities::bytesToHexstring(b, s);
+	dbValue = s;
+}
+
+void UTXO::setTXID(const std::vector<unsigned char>& _txid)
+{
+	txid = _txid;
+}
+
+
 std::ostream& operator<<(std::ostream& os, UTXO& utxo)
 {
-	const char* scriptDesc = scriptDescription[(size_t)utxo.scriptType];
+	std::string scriptDesc, dbValue;
+	utxo.scriptDescription((size_t)utxo.scriptType, scriptDesc);
+
+	utxo.getDbValue(dbValue);
 	std::string scriptPubKeyString;
        	utilities::bytesToHexstring(utxo.scriptPubKey, scriptPubKeyString);
+
+	os << "DB Value:\t\t" << dbValue << "\n";
 	os << "Amount (sats):\t\t" << utxo.amount << "\n";
 	os << "Block height:\t\t" << utxo.height << "\n";
 	os << "Coinbase:\t\t" << (utxo.coinbase ? "true" : "false") << "\n";
@@ -186,10 +233,16 @@ Varint<T>& Varint<T>::operator=(const Varint<T>& other)
 }
 
 template <class T>
-Varint<T> Varint<T>::getInputBytes()
+void Varint<T>::getInputBytes(std::vector<unsigned char>& v)
 {
-	return inputBytes;
+	v = inputBytes;
 }
+
+//template <class T>
+//Varint<T> Varint<T>::getInputBytes()
+//{
+//	return inputBytes;
+//}
 
 template <class T>
 void Varint<T>::setStartIndexes()

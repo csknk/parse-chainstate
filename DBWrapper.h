@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
+#include <memory>
 #include "leveldb/db.h"
 #include "varint.h"
 
@@ -30,7 +31,7 @@ class DBWrapper {
 		void setDBName(const std::string& s);
 		void read(std::string const& key, std::string& val);
 		void outputAllKeyVals();
-		void outputAllKeyVals(std::tuple<BytesVec, BytesVec, BytesVec> result);
+		void getAllUTXOs(std::vector<UTXO>& utxos);
 		void fetchRecord(const std::string& key, const uint32_t vout, std::string& value);
 		void fetchRecord(const std::string& key, const uint32_t vout, BytesVec& value);
 };

@@ -21,7 +21,8 @@ public:
 	Varint(T _inputCollection);
 	Varint();
 	Varint<T>& operator=(const Varint<T>& other);
-	Varint<T> getInputBytes();	
+	//Varint<T> getInputBytes();	
+	void getInputBytes(std::vector<unsigned char>& v);
 	void outputResult();
 	ssize_t decode(size_t start, std::vector<unsigned char>& result);
 	void remainingBytesFromIndex(size_t start, std::vector<unsigned char>& result);
@@ -31,34 +32,30 @@ public:
 
 class UTXO {
 private:
-	// std::vector<unsigned char> txid; 
-	// std::vector<unsigned char> value; // Value returned from levelDB <--- same as inputValue??
-	// std::vector<unsigned char> vout;
+	std::vector<unsigned char> vout;
+	std::vector<unsigned char> txid; 
 	Varint<std::vector<unsigned char>> inputValue;
-	void setHeight();
-	void setAmount();
-	void setScriptPubKey();
-	ssize_t scriptStart;
-	uint64_t DecompressAmount(uint64_t x);
-public:
-	UTXO();
-	UTXO(Varint<std::vector<unsigned char>>& _inputValue);
-	void printUTXO();
 	std::vector<unsigned char> scriptPubKey;
-	int vout;
 	bool coinbase;
 	uint64_t height;
 	uint64_t amount = 0;
 	unsigned char scriptType;
+	
+	ssize_t scriptStart;
+	uint64_t DecompressAmount(uint64_t x);
+	void setHeight();
+	void setAmount();
+	void setScriptPubKey();
+public:
+	UTXO();
+	UTXO(const UTXO& src);
+	UTXO(Varint<std::vector<unsigned char>>& _inputValue);
+	void scriptDescription(size_t type, std::string& desc);
+	void getDbValue(std::string& dbValue);
+	void printUTXO();
+	void setTXID(const std::vector<unsigned char>& txid);
 
 	friend std::ostream& operator<<(std::ostream& os, UTXO& utxo);
-};
-
-/** Map scriptType to string **/
-static const char* scriptDescription[] = {
-	"P2PKH",
-	"P2SH",
-	"P2PK: data is a compressed public key, y = even",
 };
 
 /** Script opcodes */
