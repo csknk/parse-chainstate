@@ -119,7 +119,12 @@ void UTXO::setScriptPubKey()
 //		memcpy(&scriptPubKey[1], pubkey.begin(), 65);
 //		scriptPubKey[66] = OP_CHECKSIG;
 //		break;
+	default:
+		scriptPubKey.resize(scriptType - 6);
+		memcpy(&scriptPubKey[0], in.data() + 1, (scriptType - 6));
+
 	}
+
 }
 
 // Copyright (c) 2009-2010 Satoshi Nakamoto
@@ -157,12 +162,15 @@ void UTXO::scriptDescription(size_t type, std::string& desc)
 {
 	/** Map scriptType to string **/
 	static const char* scriptDescription[] = {
-		"P2PKH",
-		"P2SH",
-		"P2PK: data is a compressed public key, y = even",
+		"P2PKH",							// 0
+		"P2SH",								// 1
+		"P2PK: data is a compressed public key, y = even",		// 2
+		"P2PK: data is a compressed public key, y = odd",		// 3
+		"P2PK: Uncompressed pubkey, compressed for levelDB, y = even",	// 4
+		"P2PK: Uncompressed pubkey, compressed for levelDB, y = odd",	// 5
 	};
 
-	if (type > 2) {
+	if (type > 5) {
 		desc = "Unknown script type.";
 	} else {
 		desc = scriptDescription[type];	
@@ -205,8 +213,9 @@ std::ostream& operator<<(std::ostream& os, UTXO& utxo)
 	os << "Amount (sats):\t" << utxo.amount << "\n";
 	os << "Block height:\t" << utxo.height << "\n";
 	os << "Coinbase:\t" << (utxo.coinbase ? "true" : "false") << "\n";
-	os << "scriptPubKey:\t"	<< scriptPubKeyString << "\n";
+	os << "scriptPubKey:\t" << scriptPubKeyString << "\n";
 	os << "Script type:\t" << scriptDesc << "\n";
+	os << "nSize:\t\t" << (size_t)utxo.scriptType << "\n";
 	return os;
 }
 
