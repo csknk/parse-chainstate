@@ -196,15 +196,17 @@ std::ostream& operator<<(std::ostream& os, UTXO& utxo)
 	utxo.scriptDescription((size_t)utxo.scriptType, scriptDesc);
 
 	utxo.getDbValue(dbValue);
-	std::string scriptPubKeyString;
+	std::string scriptPubKeyString, txid;
        	utilities::bytesToHexstring(utxo.scriptPubKey, scriptPubKeyString);
+       	utilities::bytesToHexstring(utxo.txid, txid);
 
-	os << "DB Value:\t\t" << dbValue << "\n";
-	os << "Amount (sats):\t\t" << utxo.amount << "\n";
-	os << "Block height:\t\t" << utxo.height << "\n";
-	os << "Coinbase:\t\t" << (utxo.coinbase ? "true" : "false") << "\n";
-	os << "scriptPubKey:\t\t" << scriptPubKeyString << "\n";
-	os << "Script Description:\t" << scriptDesc << "\n";
+	os << "txid:\t\t" << txid << "\n";
+	os << "DB Value:\t" << dbValue << "\n";
+	os << "Amount (sats):\t" << utxo.amount << "\n";
+	os << "Block height:\t" << utxo.height << "\n";
+	os << "Coinbase:\t" << (utxo.coinbase ? "true" : "false") << "\n";
+	os << "scriptPubKey:\t"	<< scriptPubKeyString << "\n";
+	os << "Script type:\t" << scriptDesc << "\n";
 	return os;
 }
 
@@ -362,5 +364,3 @@ void Varint<T>::shiftAllBytesRight(T& bytes, size_t shift)
 }	
 
 template class Varint<std::vector<unsigned char>>;
-//template class UTXO<std::vector<unsigned char>>;
-

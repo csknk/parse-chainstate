@@ -61,38 +61,8 @@ void DBWrapper::checkStatus(std::string msg)
 }
 
 /**
- * The first 32 bytes of txidvout is txid, the remaining bytes are a varint representing the vout. 
  *
  * */
-//void DBWrapper::outputAllKeyVals(std::tuple<BytesVec, BytesVec, BytesVec> result) 
-//{
-//	leveldb::Iterator* it = db->NewIterator(readoptions);
-//	for (it->SeekToFirst(); it->Valid(); it->Next()) {
-//		BytesVec deObfuscatedKey;
-//		BytesVec deObfuscatedValue;
-//		deObfuscate(it->value(), deObfuscatedValue);
-//		std::cout << "KEY: ";
-//		BytesVec key;
-//		for (size_t i = 0; i < it->key().size(); i++) {
-//			key.push_back(it->key()[i]);
-//		} 
-//		utilities::printToHex(key);
-//		std::cout << "\nVALUE: ";
-//		utilities::printToHex(deObfuscatedValue);
-//		std::cout << "\n";
-//		if (key[0] == 0x43) {
-//			BytesVec txid;
-//			txid.insert(txid.begin(), key.begin() + 1, key.end() - 1);
-//			utilities::switchEndianness(txid);
-//			std::cout << "txid: ";
-//			utilities::printToHex(txid);
-//			std::cout << "\n";
-//		}
-//	}
-//	assert(it->status().ok());
-//	delete it;
-//}
-
 void DBWrapper::getAllUTXOs(std::vector<UTXO>& utxos)
 {
 	leveldb::Iterator* it = db->NewIterator(readoptions);
