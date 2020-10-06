@@ -130,3 +130,7 @@ References
 [7]: https://en.wikipedia.org/wiki/Variable-length_quantity
 [8]: https://github.com/google/leveldb/blob/master/doc/index.md
 
+
+Working Notes
+--------------
+https://bitcoin.stackexchange.com/a/83423/56514
