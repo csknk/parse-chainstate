@@ -13,6 +13,7 @@ UTXO::UTXO(Varint<std::vector<unsigned char>>& _inputValue)
 UTXO::UTXO(const UTXO& src)
 {
 	txid = src.txid;	
+	vout = src.vout;
 	height = src.height;
 	coinbase = src.coinbase;
 	scriptPubKey = src.scriptPubKey;
@@ -97,16 +98,16 @@ void UTXO::setScriptPubKey()
 		memcpy(&scriptPubKey[2], &in[1], 20);
 		scriptPubKey[22] = OP_EQUAL;
 		break;
-	case 0x02: // upcoming data is a compressed public key (nsize makes up part of the public key) [y=even]
-	case 0x03: // upcoming data is a compressed public key (nsize makes up part of the public key) [y=odd]
+	case 0x02: // PKPK: upcoming data is a compressed public key (nsize makes up part of the public key) [y=even]
+	case 0x03: // PKPK: upcoming data is a compressed public key (nsize makes up part of the public key) [y=odd]
 		scriptPubKey.resize(35);
 		scriptPubKey[0] = 33;
 		scriptPubKey[1] = scriptType;
 		memcpy(&scriptPubKey[2], in.data(), 32);
 		scriptPubKey[34] = OP_CHECKSIG;
 		break;
-//	case 0x04:
-//	case 0x05:
+//	case 0x04: // PKPK: upcoming data is an uncompressed public key (compressed for levelDB) [y=even]
+//	case 0x05: // PKPK: upcoming data is an uncompressed public key (compressed for levelDB) [y=odd]
 //		unsigned char vch[33] = {};
 //		vch[0] = scriptType - 2;
 //		memcpy(&vch[1], in.data(), 32);
@@ -122,9 +123,7 @@ void UTXO::setScriptPubKey()
 	default:
 		scriptPubKey.resize(scriptType - 6);
 		memcpy(&scriptPubKey[0], in.data() + 1, (scriptType - 6));
-
 	}
-
 }
 
 // Copyright (c) 2009-2010 Satoshi Nakamoto
@@ -177,12 +176,6 @@ void UTXO::scriptDescription(size_t type, std::string& desc)
 	}
 }
 
-void UTXO::printUTXO()
-{
-	std::cout << "Block height:\t" << height << "\n";
-	std::cout << "Coinbase:\t" << (coinbase ? "true" : "false") << "\n";
-}
-
 void UTXO::getDbValue(std::string& dbValue)
 {
 	std::string s;
@@ -197,6 +190,10 @@ void UTXO::setTXID(const std::vector<unsigned char>& _txid)
 	txid = _txid;
 }
 
+void UTXO::setVout(const uint32_t& _vout)
+{
+	vout = _vout;
+}
 
 std::ostream& operator<<(std::ostream& os, UTXO& utxo)
 {
@@ -207,6 +204,7 @@ std::ostream& operator<<(std::ostream& os, UTXO& utxo)
 	std::string scriptPubKeyString, txid;
        	utilities::bytesToHexstring(utxo.scriptPubKey, scriptPubKeyString);
        	utilities::bytesToHexstring(utxo.txid, txid);
+	size_t nSize = utxo.scriptType > 6 ? utxo.scriptType - 6 : utxo.scriptType;
 
 	os << "txid:\t\t" << txid << "\n";
 	os << "DB Value:\t" << dbValue << "\n";
@@ -215,7 +213,7 @@ std::ostream& operator<<(std::ostream& os, UTXO& utxo)
 	os << "Coinbase:\t" << (utxo.coinbase ? "true" : "false") << "\n";
 	os << "scriptPubKey:\t" << scriptPubKeyString << "\n";
 	os << "Script type:\t" << scriptDesc << "\n";
-	os << "nSize:\t\t" << (size_t)utxo.scriptType << "\n";
+	os << "nSize:\t\t" << nSize << "\n";
 	return os;
 }
 
@@ -248,12 +246,6 @@ void Varint<T>::getInputBytes(std::vector<unsigned char>& v)
 {
 	v = inputBytes;
 }
-
-//template <class T>
-//Varint<T> Varint<T>::getInputBytes()
-//{
-//	return inputBytes;
-//}
 
 template <class T>
 void Varint<T>::setStartIndexes()

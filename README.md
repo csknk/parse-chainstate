@@ -14,6 +14,12 @@ UTXOs consist of two parts:
 1. The amount transferred to the output
 2. The locking script `scriptPubKey` that specifies the spending conditions for the output
 
+Outpoints
+---------
+Each transaction (with the exception of coinbase transactions) spends a UTXO from a previous transaction. In the context of a transaction, UTXOs are referenced by outpoints.
+
+A single transaction can have multiple outputs - so individual UTXOs are referenced by their transaction ID (TXID) and output index number.
+
 Local Database: chainstate
 --------------------------
 Bitcoin Core stores UTXO data in the `chainstate` LevelDB database. Data is stored in a per-output model - entries in the chainstate database represent single UTXOs.
@@ -33,6 +39,15 @@ For example, a block height that is less than or equal to 255 could be stored in
 To efficiently allow for such variability, Bitcoin uses a system of variable-length integers such that a minimal amount of space is used to store integers, whilst allowing for integers to be as large or as small as necessary.
 
 **Varints serialize integers into one or more bytes, with smaller numbers requiring fewer bytes to be encoded.**
+
+### Varints vs compactSize Integers
+Bitcoin has multiple methods for encoding variable length integers, with different methods used in different parts of the codebase.
+
+The raw transaction format and peer-to-peer network messages within Bitcoin use a type of variable length integer encoding known as "compactSize". This involves prepending integers with a byte that indicates integer length for numbers greater than 252.
+
+Used in the transaction format, compactSize integers format part of the [Bitcoin consensus rules][9].
+
+This document and repo is concerned with Varints as this is the method which Bitcoin core uses to serialize data to disk in the LevelDB database.
 
 Varints in the LevelDB chainstate Database
 -------------------------------------------
@@ -114,6 +129,7 @@ Usage
 References
 ----------
 * [LevelDB Project docs][8] - not very useful
+* [Compact Integers in Bitcoin][9] - Bitcoin Developer on bitcoin.org
 * [Variable length quantity][7], Wikipedia
 * [Bitcoin SE answer on CVarint format in chainstate DB][2]
 * [Bitcoin chainstate parser by in3rsha][3] - very useful README
@@ -129,7 +145,7 @@ References
 [6]: https://bitcoin.stackexchange.com/a/51639/56514
 [7]: https://en.wikipedia.org/wiki/Variable-length_quantity
 [8]: https://github.com/google/leveldb/blob/master/doc/index.md
-
+[9]: https://developer.bitcoin.org/reference/transactions.html#compactsize-unsigned-integers
 
 Working Notes
 --------------

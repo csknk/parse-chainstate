@@ -32,7 +32,8 @@ public:
 
 class UTXO {
 private:
-	std::vector<unsigned char> vout;
+//	std::vector<unsigned char> vout;
+	uint32_t vout;
 	std::vector<unsigned char> txid; 
 	Varint<std::vector<unsigned char>> inputValue;
 	std::vector<unsigned char> scriptPubKey;
@@ -52,8 +53,8 @@ public:
 	UTXO(Varint<std::vector<unsigned char>>& _inputValue);
 	void scriptDescription(size_t type, std::string& desc);
 	void getDbValue(std::string& dbValue);
-	void printUTXO();
 	void setTXID(const std::vector<unsigned char>& txid);
+	void setVout(const uint32_t& _vout);
 
 	friend std::ostream& operator<<(std::ostream& os, UTXO& utxo);
 };

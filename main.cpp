@@ -9,23 +9,30 @@ int main(int argc, char* argv[])
 		std::vector<UTXO> utxos;
 	       	db.getAllUTXOs(utxos);
 		for (auto el : utxos) {
-//			utilities::printToHex(el.txid);
 			std::cout << el << "\n";
 		}
 		std::cout << utxos.size() << " UTXOs\n";
 		return EXIT_SUCCESS;
 	}
-	std::cout << "Enter a txid:";
+	std::cout << "Enter a txid: ";
 	std::string txid;
 	std::cin >> txid;
-	std::string val;
+
+	std::cout << "Enter an output index: ";
+	uint32_t vout;
+	std::cin >> vout;
 
 	// DBWrapper::fetchRecord() is overloaded.
 	// Pass in a string or a std::vector<unsigned char>.
 	std::vector<unsigned char> valueBytes;
-	db.fetchRecord(txid, 0x00, valueBytes);
-
-	// API design
+	try {
+		db.fetchRecord(txid, vout, valueBytes);
+	}
+	catch (const std::invalid_argument& e) {
+		std::cerr << "Error. " << e.what() << "\n";
+		return	EXIT_FAILURE;
+	}
+	// Initialise UTXO with a Varint constructed from a vector of bytes retrieved from the chainstate db. 
 	Varint v(valueBytes);
 	UTXO u(v);
 	std::cout << u << "\n";

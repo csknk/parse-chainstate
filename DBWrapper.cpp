@@ -78,9 +78,12 @@ void DBWrapper::getAllUTXOs(std::vector<UTXO>& utxos)
 		} 
 		if (key[0] == 0x43) {
 			BytesVec txid;
-			txid.insert(txid.begin(), key.begin() + 1, key.end() - 1);
+//			txid.insert(txid.begin(), key.begin() + 1, key.end() - 1);
+			assert(key.size() > 33);
+			txid.insert(txid.begin(), key.begin() + 1, key.begin() + 33);
 			utilities::switchEndianness(txid);
-			u.setTXID(txid);	
+			u.setTXID(txid);
+//			u.setVout();	
 		}
 		utxos.push_back(u);
 	}
@@ -108,10 +111,9 @@ void DBWrapper::fetchRecord(const std::string& txid, const uint32_t vout, BytesV
 	std::string rawVal;
 	
 	status = db->Get(readoptions, keySlice, &rawVal);
-		if (!status.ok()) {
+	if (!status.ok()) {
 		throw std::invalid_argument("Key not found.");
 	}
-	
 	deObfuscate(rawVal, value);
 }
 
