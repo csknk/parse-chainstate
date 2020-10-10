@@ -5,6 +5,7 @@
 #include <vector>
 #include <iomanip>
 #include <cstring>
+#include <cassert>
 #include "utilities.h"
 
 template <class T>
@@ -32,8 +33,7 @@ public:
 
 class UTXO {
 private:
-//	std::vector<unsigned char> vout;
-	uint32_t vout;
+	std::vector<unsigned char> vout;
 	std::vector<unsigned char> txid; 
 	Varint<std::vector<unsigned char>> inputValue;
 	std::vector<unsigned char> scriptPubKey;
@@ -55,6 +55,7 @@ public:
 	void getDbValue(std::string& dbValue);
 	void setTXID(const std::vector<unsigned char>& txid);
 	void setVout(const uint32_t& _vout);
+	void csv(std::string& s);
 
 	friend std::ostream& operator<<(std::ostream& os, UTXO& utxo);
 };

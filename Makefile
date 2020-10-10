@@ -6,7 +6,9 @@ BIN_DIR = bin
 OBJS_DIR = $(BIN_DIR)/objs
 # leveldb must not be a position independent executable, so the -no-pie flag is required
 EXTRAFLAGS = -no-pie
-CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g
+#CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g
+# Don't compile with ASAN if using Valgrind...
+CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g -fsanitize=leak -fsanitize=address
 LDFLAGS = 
 LDLIBS = -lleveldb -lsnappy -lpthread 
 CXX = g++ ${CXXFLAGS}

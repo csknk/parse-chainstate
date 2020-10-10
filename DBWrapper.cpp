@@ -27,6 +27,7 @@ void DBWrapper::setObfuscationKey()
 	read(obfuscationKeyKey, obfuscationKeyString);
 	utilities::stringToHexBytes(obfuscationKeyString, obfuscationKey);
 	obfuscationKey.erase(obfuscationKey.begin());
+	utilities::printToHex(obfuscationKey);
 }
 
 void DBWrapper::openDB()
@@ -57,7 +58,6 @@ void DBWrapper::checkStatus(std::string msg)
 		std::cerr << status.ToString() << std::endl;
 	}
 	assert(status.ok());
-	
 }
 
 /**
@@ -67,25 +67,52 @@ void DBWrapper::getAllUTXOs(std::vector<UTXO>& utxos)
 {
 	leveldb::Iterator* it = db->NewIterator(readoptions);
 	for (it->SeekToFirst(); it->Valid(); it->Next()) {
-		BytesVec deObfuscatedValue;
-		deObfuscate(it->value(), deObfuscatedValue);
-		Varint v(deObfuscatedValue);
-		UTXO u(v);
 
 		BytesVec key;
 		for (size_t i = 0; i < it->key().size(); i++) {
 			key.push_back(it->key()[i]);
 		} 
 		if (key[0] == 0x43) {
+			BytesVec deObfuscatedValue;
+			deObfuscate(it->value(), deObfuscatedValue);
+			Varint v(deObfuscatedValue);
+			UTXO u(v);
 			BytesVec txid;
-//			txid.insert(txid.begin(), key.begin() + 1, key.end() - 1);
 			assert(key.size() > 33);
 			txid.insert(txid.begin(), key.begin() + 1, key.begin() + 33);
 			utilities::switchEndianness(txid);
 			u.setTXID(txid);
-//			u.setVout();	
+			utxos.push_back(u);
 		}
-		utxos.push_back(u);
+	}
+	assert(it->status().ok());
+	delete it;
+}
+
+void DBWrapper::printAllUTXOs()
+{
+	leveldb::Iterator* it = db->NewIterator(readoptions);
+	for (it->SeekToFirst(); it->Valid(); it->Next()) {
+
+		BytesVec key;
+		for (size_t i = 0; i < it->key().size(); i++) {
+			key.push_back(it->key()[i]);
+		} 
+		if (key[0] == 0x43) {
+			BytesVec deObfuscatedValue;
+			deObfuscate(it->value(), deObfuscatedValue);
+			Varint v(deObfuscatedValue);
+			UTXO u(v);
+			BytesVec txid;
+			assert(key.size() > 33);
+			txid.insert(txid.begin(), key.begin() + 1, key.begin() + 33);
+			utilities::switchEndianness(txid);
+			u.setTXID(txid);
+			std::string output;
+			u.csv(output);
+			std::cout << output;
+//			std::cout << u << "\n";
+		}
 	}
 	assert(it->status().ok());
 	delete it;

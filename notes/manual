@@ -1,0 +1,90 @@
+txid:		1dd5ed4fec2cf17f441ae0b7b3b41749f5ab446d47878d30c00a0beb8eaf6906
+DB Value:	817b80651c0014072184c9de0272716c9102121aaa2febe8375707
+Amount (sats):	2500000000
+Block height:	61
+Coinbase:	true
+scriptPubKey:	ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+Script type:	Unknown script type.
+nSize:		22
+
+Block height:	81		7b
+		1000 0001	0111 1011
+Last 7 bits:	 000 0001	 111 1011
+Add 1:		 000 0010	 111 1011
+Coinbase == true
+Remove Coinbase	 000 0010	 111 101
+
+				bd
+Concatenate			1011 1101
+Decimal				189		CORRECT
+
+{
+  "amount": 0.00000000,
+  "confirmations": 30,
+  "generated": true,
+  "blockhash": "544bd0b647c45f9783e940fa7e39ab69155cdb272473919cb801093c62993579",
+  "blockheight": 189,
+  "blockindex": 0,
+  "blocktime": 1594215603,
+  "txid": "1dd5ed4fec2cf17f441ae0b7b3b41749f5ab446d47878d30c00a0beb8eaf6906",
+  "walletconflicts": [
+  ],
+  "time": 1594215590,
+  "timereceived": 1594215590,
+  "bip125-replaceable": "no",
+  "details": [
+    {
+      "address": "bcrt1qquscfjw7qfe8zmy3qgfp4230a05rw4c8c5smkn",
+      "category": "immature",
+      "amount": 25.00000000,
+      "label": "",
+      "vout": 0
+    }
+  ],
+  "hex": "020000000001010000000000000000000000000000000000000000000000000000000000000000ffffffff0502bd000101ffffffff0200f9029500000000160014072184c9de0272716c9102121aaa2febe83757070000000000000000266a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf90120000000000000000000000000000000000000000000000000000000000000000000000000"
+}
+
+{
+  "txid": "1dd5ed4fec2cf17f441ae0b7b3b41749f5ab446d47878d30c00a0beb8eaf6906",
+  "hash": "42795a3ab8c54847a4d80aee8fcafcb91be80380e7bc91e53563d9d5079f2824",
+  "version": 2,
+  "size": 170,
+  "vsize": 143,
+  "weight": 572,
+  "locktime": 0,
+  "vin": [
+    {
+      "coinbase": "02bd000101",
+      "sequence": 4294967295
+    }
+  ],
+  "vout": [
+    {
+      "value": 25.00000000,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "0 072184c9de0272716c9102121aaa2febe8375707",
+        "hex": "0014072184c9de0272716c9102121aaa2febe8375707",
+        "reqSigs": 1,
+        "type": "witness_v0_keyhash",
+        "addresses": [
+          "bcrt1qquscfjw7qfe8zmy3qgfp4230a05rw4c8c5smkn"
+        ]
+      }
+    },
+    {
+      "value": 0.00000000,
+      "n": 1,
+      "scriptPubKey": {
+        "asm": "OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9",
+        "hex": "6a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9",
+        "type": "nulldata"
+      }
+    }
+  ],
+  "hex": "020000000001010000000000000000000000000000000000000000000000000000000000000000ffffffff0502bd000101ffffffff0200f9029500000000160014072184c9de0272716c9102121aaa2febe83757070000000000000000266a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf90120000000000000000000000000000000000000000000000000000000000000000000000000",
+  "blockhash": "544bd0b647c45f9783e940fa7e39ab69155cdb272473919cb801093c62993579",
+  "confirmations": 30,
+  "time": 1594215603,
+  "blocktime": 1594215603
+}

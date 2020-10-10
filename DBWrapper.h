@@ -32,6 +32,7 @@ class DBWrapper {
 		void read(std::string const& key, std::string& val);
 		void outputAllKeyVals();
 		void getAllUTXOs(std::vector<UTXO>& utxos);
+		void printAllUTXOs();
 		void fetchRecord(const std::string& key, const uint32_t vout, std::string& value);
 		void fetchRecord(const std::string& key, const uint32_t vout, BytesVec& value);
 };

@@ -106,6 +106,9 @@ void UTXO::setScriptPubKey()
 		memcpy(&scriptPubKey[2], in.data(), 32);
 		scriptPubKey[34] = OP_CHECKSIG;
 		break;
+	case 0x04:
+	case 0x05:
+		break;
 //	case 0x04: // PKPK: upcoming data is an uncompressed public key (compressed for levelDB) [y=even]
 //	case 0x05: // PKPK: upcoming data is an uncompressed public key (compressed for levelDB) [y=odd]
 //		unsigned char vch[33] = {};
@@ -121,6 +124,9 @@ void UTXO::setScriptPubKey()
 //		scriptPubKey[66] = OP_CHECKSIG;
 //		break;
 	default:
+//		scriptPubKey.resize(32);
+//		scriptPubKey.assign(32, 0xff);
+		assert(scriptType > 6);
 		scriptPubKey.resize(scriptType - 6);
 		memcpy(&scriptPubKey[0], in.data() + 1, (scriptType - 6));
 	}
@@ -161,12 +167,12 @@ void UTXO::scriptDescription(size_t type, std::string& desc)
 {
 	/** Map scriptType to string **/
 	static const char* scriptDescription[] = {
-		"P2PKH",							// 0
-		"P2SH",								// 1
-		"P2PK: data is a compressed public key, y = even",		// 2
-		"P2PK: data is a compressed public key, y = odd",		// 3
-		"P2PK: Uncompressed pubkey, compressed for levelDB, y = even",	// 4
-		"P2PK: Uncompressed pubkey, compressed for levelDB, y = odd",	// 5
+		"P2PKH",								// 0
+		"P2SH",									// 1
+		"P2PKa", // data is a compressed public key, y = even			// 2
+		"P2PKb", // data is a compressed public key, y = odd			// 3
+		"P2PKc", // Uncompressed pubkey, compressed for levelDB, y = even	// 4
+		"P2PKd", // Uncompressed pubkey, compressed for levelDB, y = odd	// 5
 	};
 
 	if (type > 5) {
@@ -190,9 +196,22 @@ void UTXO::setTXID(const std::vector<unsigned char>& _txid)
 	txid = _txid;
 }
 
-void UTXO::setVout(const uint32_t& _vout)
+//void UTXO::setVout(const uint32_t& _vout)
+//{
+//	vout = _vout;
+//}
+void UTXO::csv(std::string& s)
 {
-	vout = _vout;
+	std::string txidStr, scriptPubKeyStr, scriptDescStr;
+	utilities::bytesToHexstring(txid, txidStr);
+	utilities::bytesToHexstring(scriptPubKey, scriptPubKeyStr);
+	scriptDescription((size_t)scriptType, scriptDescStr);
+	std::stringstream ss;
+	ss << txidStr << "," << height << ",";
+	ss << (coinbase ? "1" : "0") << ",";
+	ss << amount << "," << scriptPubKeyStr << ",";
+	ss << scriptDescStr << "\n";
+	s = ss.str();
 }
 
 std::ostream& operator<<(std::ostream& os, UTXO& utxo)
