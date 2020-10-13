@@ -82,6 +82,12 @@ This means that values must be XORed against the obfuscation key after they have
 ``` 
 See [here][10].
 
+Once the value has been de-obfuscated, data is stored in the following format:
+
+`<Varint block height><Varint amount><nSize><locking script>`
+
+Varints in the context of the `chainstate` database are described below.
+
 Variable Length Integers: Varints
 ---------------------------------
 Bitcoin uses Varints to transmit and store values where the minimum number of bytes required to store a value is not known.
