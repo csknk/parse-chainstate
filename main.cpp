@@ -4,8 +4,8 @@
 
 int main(int argc, char* argv[])
 {
-	DBWrapper db("chainstate-2");
-//	DBWrapper db("mainnet-chainstate");
+//	DBWrapper db("chainstate-2");
+	DBWrapper db("mainnet-chainstate");
 	if (argc == 2 && strcmp(argv[1], "true") == 0) {
 	       	db.printAllUTXOs();
 		return EXIT_SUCCESS;

@@ -18,12 +18,69 @@ Outpoints
 ---------
 Each transaction (with the exception of coinbase transactions) spends a UTXO from a previous transaction. In the context of a transaction, UTXOs are referenced by outpoints.
 
-A single transaction can have multiple outputs - so individual UTXOs are referenced by their transaction ID (TXID) and output index number.
+A single transaction can have multiple outputs - so individual UTXOs are referenced by their transaction ID (TXID) and output index numberi (vout).
+
+Together, the txid and the output index are known as the UTXO outpoint.
 
 Local Database: chainstate
 --------------------------
-Bitcoin Core stores UTXO data in the `chainstate` LevelDB database. Data is stored in a per-output model - entries in the chainstate database represent single UTXOs.
+Bitcoin Core full nodes store UTXO data in the `chainstate` LevelDB database. Data is stored in a per-output model - single entries in the chainstate database represent single UTXOs.
 
+UTXO data is stored in this way so that transactions can be validated and new transactions without the necessity of checking the entire blockchain.
+
+At the time of writing, the `chainstate` database is approximately 4GB in size.
+
+Data Storage Format
+-------------------
+[LevelDB][8] is a simple on-disk key-value store. Keys and values are stored as strings in arbitrary byte arrays, sorted by key. Indexing is not supported. Though LevelDB keys & values are strings, they are not C-style null-terminated strings - this is because LevelDB keys & values may contain null bytes.
+
+Chainstate Keys
+---------------
+Keys in the `chainstate` database consist of a little-endian representation of the txid prepended with the single byte `0x43` ('C') and appended with a Varint representation of the vout:
+
+`0x43<txid, little endian><vout>`
+
+Chainstate Values
+-----------------
+Values in the `chainstate` database contain the following data:
+
+* Block height
+* Whether or not the UTXO is a coinbase transaction
+* Amount (in Satoshis)
+* nSize - an indication of the type/size of locking script
+* Locking script - hash 160 for P2PKH & P2SH, public key for P2PK, otherwise full script
+
+Value Obfuscation
+-----------------
+Values in the `chainstate` database are obfuscated - this was a [change][11] added to the database in order to prevent false positives triggered in Windows anti-virus software. 
+
+Obfuscation is a simple XOR operation against a repeated 8-byte obfuscation key. The obfuscation key is a random value unique to each node, with the obfuscation key stored in the `chainstate` database itself, under the key `0x0e00+"obfuscate_key"` ([see here][12]). 
+
+This means that values must be XORed against the obfuscation key after they have been retrieved.
+
+**TODO**: If this tool is expanded to provide analytic data on UTXOs - possibly by building a relational database from UTXO data - consider building a custom version of Bitcoin Core without obfuscation and a rebuild `chainstate` database. If dumping all UTXOs, this will likely provide a performance boost. This might be achieved by removing the following code and re-building the `chainstate` database - [see this note][13]:
+
+```c++
+    // The base-case obfuscation key, which is a noop.
+    obfuscate_key = std::vector<unsigned char>(OBFUSCATE_KEY_NUM_BYTES, '\000');
+
+    bool key_exists = Read(OBFUSCATE_KEY_KEY, obfuscate_key);
+
+    if (!key_exists && obfuscate && IsEmpty()) {
+        // Initialize non-degenerate obfuscation if it won't upset
+        // existing, non-obfuscated data.
+        std::vector<unsigned char> new_key = CreateObfuscateKey();
+
+        // Write `new_key` so we don't obfuscate the key with itself
+        Write(OBFUSCATE_KEY_KEY, new_key);
+        obfuscate_key = new_key;
+
+        LogPrintf("Wrote new obfuscate key for %s: %s\n", path.string(), HexStr(obfuscate_key));
+    }
+
+    LogPrintf("Using obfuscation key for %s: %s\n", path.string(), HexStr(obfuscate_key));
+``` 
+See [here][10].
 
 Variable Length Integers: Varints
 ---------------------------------
@@ -136,6 +193,8 @@ References
 * [https://jonnydee.wordpress.com/2011/05/01/convert-a-block-of-digits-from-base-x-to-base-y/][4]
 * [Comment relating to Variable-length integers][5], Bitcoin Core `/src/serialize.h#L339`
 * [SO Answer on Varint encoding in chainstate DB][6]
+* [Remove lines for non-obfuscated values][10]
+* [Obfuscate chainstate, PR #6650][11]
 
 [1]: https://github.com/bitcoin/bitcoin/blob/v0.13.2/src/serialize.h#L307L372
 [2]: https://bitcoin.stackexchange.com/a/51639/56514
@@ -146,6 +205,10 @@ References
 [7]: https://en.wikipedia.org/wiki/Variable-length_quantity
 [8]: https://github.com/google/leveldb/blob/master/doc/index.md
 [9]: https://developer.bitcoin.org/reference/transactions.html#compactsize-unsigned-integers
+[10]: https://github.com/bitcoin/bitcoin/blob/80aa83aa406447d9b0932301b37966a30d0e1b6e/src/dbwrapper.cpp#L149-L166
+[11]: https://github.com/bitcoin/bitcoin/pull/6650
+[12]: https://github.com/csknk/parse-chainstate/blob/51434fbf8cfde3f19e2a3ac0ff8a5ee35259b6e0/DBWrapper.cpp#L24-L25
+[13]: https://bitcoin.stackexchange.com/a/62700/56514
 
 Working Notes
 --------------
