@@ -78,10 +78,18 @@ void UTXO::setAmount()
 void UTXO::setScriptPubKey()
 {
 	std::vector<unsigned char> in;
+	
+	// nSize is a Varint - nSize receives the decoded value
+	std::vector<unsigned char> nSize;
+
+	// scriptStart is the index of the first script byte
+	scriptStart = inputValue.decode(2, nSize);	
+	
+	// The script is comprised of the remaining bytes in the retrieved value
 	inputValue.remainingBytesFromIndex((size_t) scriptStart, in);
-	// Incorrect - more properly, this is a Varint not a single byte
-	// --------------------------------------------------------------------------------------------------
-	scriptType = in[0];
+	
+	// There are 6 special script types. Outside these 6, the entire script is present
+	scriptType = nSize[0] < 6 ? nSize[0] : -1;
 
 	switch(scriptType) {
 	case 0x00: // P2PKH Pay to Public Key Hash
@@ -89,7 +97,7 @@ void UTXO::setScriptPubKey()
 		scriptPubKey[0] = OP_DUP;
 		scriptPubKey[1] = OP_HASH160;
 		scriptPubKey[2] = 0x14;
-		memcpy(&scriptPubKey[3], &in[1], 20);
+		memcpy(&scriptPubKey[3], &in[0], 20);
 		scriptPubKey[23] = OP_EQUALVERIFY;
 		scriptPubKey[24] = OP_CHECKSIG;
 		break;
@@ -97,7 +105,7 @@ void UTXO::setScriptPubKey()
 		scriptPubKey.resize(23);
 		scriptPubKey[0] = OP_HASH160;
 		scriptPubKey[1] = 0x14;
-		memcpy(&scriptPubKey[2], &in[1], 20);
+		memcpy(&scriptPubKey[2], &in[0], 20);
 		scriptPubKey[22] = OP_EQUAL;
 		break;
 	case 0x02: // PKPK: upcoming data is a compressed public key (nsize makes up part of the public key) [y=even]
@@ -125,12 +133,13 @@ void UTXO::setScriptPubKey()
 //		memcpy(&scriptPubKey[1], pubkey.begin(), 65);
 //		scriptPubKey[66] = OP_CHECKSIG;
 //		break;
-	default:
-//		scriptPubKey.resize(32);
-//		scriptPubKey.assign(32, 0xff);
-		assert(scriptType > 6);
-		scriptPubKey.resize(scriptType - 6);
-		memcpy(&scriptPubKey[0], in.data() + 1, (scriptType - 6));
+	default: // Upcoming script is custom, made up of nSize bytes
+		assert(scriptType == -1);
+		
+		// Convert nSize (vector of bytes)
+		auto customScriptSize = utilities::toUint64(nSize) - 6;
+		scriptPubKey.resize(customScriptSize);
+		memcpy(&scriptPubKey[0], in.data() + 1, customScriptSize);
 	}
 }
 

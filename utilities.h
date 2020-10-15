@@ -143,6 +143,24 @@ inline void bytesToDecimal(const std::vector<unsigned char>& bytes, std::string&
 	result = ss.str();
 }
 
+/**
+ * Convert a container of bytes into a uint64_t
+ *
+ * Useful for Varints.
+ * */
+template <typename T>
+uint64_t toUint64(T container)
+{
+	auto size = container.size();
+	assert(size < 9); // Max size for uint64_t
+	uint64_t num = container[0];
+	num <<= ((size - 1) * 8);
+	for (size_t i = 1; i < size; i++) {
+		num |= (container[i] << ((size - 1 - i) * 8));
+	}
+	return num;
+}
+
 } // utilities
 
 #endif /* UTILITIES_H */
