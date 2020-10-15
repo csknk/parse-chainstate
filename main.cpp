@@ -1,5 +1,5 @@
 #include <iomanip>
-#include "DBWrapper.h"
+#include "dbwrapper.h"
 #include "varint.h"
 
 int main(int argc, char* argv[])

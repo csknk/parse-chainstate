@@ -1,4 +1,4 @@
-#include "DBWrapper.h"
+#include "dbwrapper.h"
 #include "utilities.h"
 
 DBWrapper::DBWrapper(std::string _dbName) : dbName(_dbName)

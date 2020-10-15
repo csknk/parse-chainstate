@@ -79,6 +79,8 @@ void UTXO::setScriptPubKey()
 {
 	std::vector<unsigned char> in;
 	inputValue.remainingBytesFromIndex((size_t) scriptStart, in);
+	// Incorrect - more properly, this is a Varint not a single byte
+	// --------------------------------------------------------------------------------------------------
 	scriptType = in[0];
 
 	switch(scriptType) {
