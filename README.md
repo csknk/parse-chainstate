@@ -1,6 +1,15 @@
 # Access Bitcoin UTXO Set With the Bitcoin Core chainstate Database 
 C++ project to access Bitcoin UTXO data by parsing the `chainstate` database.
 
+Usage
+-----
+* Clone this project
+* Run `make` in project root to build
+* Run `./bin/main` to lookup an individual UTXO: programme prompts for `txid` and `vout` on `stdin`.
+* Run `./bin/main true` to dump all UTXOs into CSV format on `stdout` (this will be a lengthy process)
+
+The `chainstate` database should be a copy, not currently being accessed by Bitcoin Core and it's location is currently hardcoded into `main.cpp`.
+
 UTXOs
 -----
 The Unspent Transaction Output (UTXO) set is a subset of Bitcoin transaction outputs that are not yet spent.
@@ -32,11 +41,15 @@ At the time of writing, the `chainstate` database is approximately 4GB in size.
 
 Data Storage Format
 -------------------
-[LevelDB][8] is a simple on-disk key-value store. Keys and values are stored as strings in arbitrary byte arrays, sorted by key. Indexing is not supported. Though LevelDB keys & values are strings, they are not C-style null-terminated strings - this is because LevelDB keys & values may contain null bytes.
+[LevelDB][8] is a simple on-disk key-value store. Keys and values are stored as strings in arbitrary byte arrays, sorted by key.
+
+Indexing is not supported.
+
+Though LevelDB keys & values are strings, they are not C-style null-terminated strings - this is because LevelDB keys & values may contain null bytes.
 
 Chainstate Keys
 ---------------
-Keys in the `chainstate` database consist of a little-endian representation of the txid prepended with the single byte `0x43` ('C') and appended with a Varint representation of the vout:
+Keys in the `chainstate` database consist of a little-endian representation of the `txid` prepended with the single byte `0x43` ('C') and appended with a Varint (see following section) representation of the vout:
 
 `0x43<txid, little endian><vout>`
 
@@ -54,7 +67,7 @@ Value Obfuscation
 -----------------
 Values in the `chainstate` database are obfuscated - this was a [change][11] added to the database in order to prevent false positives triggered in Windows anti-virus software. 
 
-Obfuscation is a simple XOR operation against a repeated 8-byte obfuscation key. The obfuscation key is a random value unique to each node, with the obfuscation key stored in the `chainstate` database itself, under the key `0x0e00+"obfuscate_key"` ([see here][12]). 
+Obfuscation is a simple XOR operation against a repeated 8-byte obfuscation key. The obfuscation key is a random value unique to each node, with the obfuscation key stored in the `chainstate` database itself, under the key `0x0e00` concatenated with the raw bytes of the string "obfuscate_key", i.e. `0e006f62667573636174655f6b6579` ([see here][12]). 
 
 This means that values must be XORed against the obfuscation key after they have been retrieved.
 
@@ -82,7 +95,7 @@ This means that values must be XORed against the obfuscation key after they have
 ``` 
 See [here][10].
 
-Once the value has been de-obfuscated, data is stored in the following format:
+Once the value has been de-obfuscated, data is held in the following format:
 
 `<Varint block height><Varint amount><nSize><locking script>`
 
@@ -92,7 +105,7 @@ Variable Length Integers: Varints
 ---------------------------------
 Bitcoin uses Varints to transmit and store values where the minimum number of bytes required to store a value is not known.
 
-For example, a block height that is less than or equal to 255 could be stored in a single byte whereas the block height 649392 would require three (unsigned) bytes:
+For example, a block height that is less than or equal to 255 could be stored in a single byte (as a `uint8_t` or `unsigned char` data type) whereas the block height 649392 would require a minimum of three (unsigned) bytes:
 
 | Value | Minimum Byte Representation |
 |-|-|
@@ -114,9 +127,11 @@ This document and repo is concerned with Varints as this is the method which Bit
 
 Varints in the LevelDB chainstate Database
 -------------------------------------------
-In the context of storing data in the levelDB `chainstate` database (which stores UTXO data), integers are stored as base 128 encoded numbers. The last 7 bits in each byte are used to represent a digit, and the position of the byte represents the power of 128 to be multiplied.
+In the context of storing data in the levelDB `chainstate` database (which stores UTXO data), integers are stored as base 128 encoded numbers.
 
-This system leaves the most significant bit (MSB) of each byte available to carry information regarding whether or not the integer is complete.
+In this system, the last 7 bits in each byte are used to represent a digit, and the position of the byte represents the power of 128 to be multiplied.
+
+This leaves the most significant bit (MSB) of each byte available to carry information regarding whether or not the integer is complete.
 
 If the MSB of a byte is set, the next digit (byte) should be read as part of the integer. If the leading digit is not set, the byte represents the final digit in the encoded base 128 integer.   
 
@@ -129,6 +144,7 @@ To ensure that each integer has a unique representation in the encoding system, 
 | 65535 | 0x82 0xFE 0x7F | 1000 0010 1111 1110 0111 1111 |
 
 This system is compact:
+
 * Integers 0-127 are represented by 1 byte
 * 128-16511 require 2 bytes
 * 16512-2113663 require 3 bytes.
@@ -185,9 +201,9 @@ In decimal: (8 * 256²) + (33 * 256) + 83 = 532819
 
 In decimal: (0 . 256²) + (119 * 256) + 89 = 30553
 
-Usage
------
-@TODO
+Amount Compression
+------------------
+To further save on space Bitcoin Core compresses numbers in the `amount` field of the UTXO. For this project I've used the Bitcoin Core `DecompressAmount` function: [see here][14].
 
 References
 ----------
@@ -215,6 +231,7 @@ References
 [11]: https://github.com/bitcoin/bitcoin/pull/6650
 [12]: https://github.com/csknk/parse-chainstate/blob/51434fbf8cfde3f19e2a3ac0ff8a5ee35259b6e0/DBWrapper.cpp#L24-L25
 [13]: https://bitcoin.stackexchange.com/a/62700/56514
+[14]: https://github.com/bitcoin/bitcoin/blob/9e8d2bd076d78ba59abceb80106f44fe26246b14/src/compressor.cpp#L168-L192 Decompress amount
 
 Working Notes
 --------------
