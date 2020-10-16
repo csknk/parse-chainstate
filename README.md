@@ -232,7 +232,3 @@ References
 [12]: https://github.com/csknk/parse-chainstate/blob/51434fbf8cfde3f19e2a3ac0ff8a5ee35259b6e0/DBWrapper.cpp#L24-L25
 [13]: https://bitcoin.stackexchange.com/a/62700/56514
 [14]: https://github.com/bitcoin/bitcoin/blob/9e8d2bd076d78ba59abceb80106f44fe26246b14/src/compressor.cpp#L168-L192 "Decompress amount"
-
-Working Notes
---------------
-https://bitcoin.stackexchange.com/a/83423/56514
