@@ -16,17 +16,17 @@ UTXOs consist of two parts:
 
 Outpoints
 ---------
-Each transaction (with the exception of coinbase transactions) spends a UTXO from a previous transaction. In the context of a transaction, UTXOs are referenced by outpoints.
+Each transaction (with the exception of coinbase transactions) spends a UTXO from a previous transaction. In the context of a transaction, UTXOs are referenced by "outpoints".
 
-A single transaction can have multiple outputs - so individual UTXOs are referenced by their transaction ID (TXID) and output index numberi (vout).
+A single transaction can have multiple outputs - so each UTXO outpoint consists of their transaction ID (`txid`) and output index number (often referred to as `vout`).
 
-Together, the txid and the output index are known as the UTXO outpoint.
+Together, the `txid` and output index are known as the UTXO outpoint.
 
 Local Database: chainstate
 --------------------------
-Bitcoin Core full nodes store UTXO data in the `chainstate` LevelDB database. Data is stored in a per-output model - single entries in the chainstate database represent single UTXOs.
+Bitcoin Core full nodes store UTXO data in the `chainstate` LevelDB database. Data is stored in a per-output model - each entry in the chainstate database represents a single UTXO.
 
-UTXO data is stored in this way so that transactions can be validated and new transactions without the necessity of checking the entire blockchain.
+UTXO data is stored in this way so that transactions can be validated and new transactions created without the necessity of checking the entire blockchain.
 
 At the time of writing, the `chainstate` database is approximately 4GB in size.
 
