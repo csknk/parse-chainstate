@@ -134,6 +134,7 @@ void UTXO::setScriptPubKey()
 //		scriptPubKey[66] = OP_CHECKSIG;
 //		break;
 	default: // Upcoming script is custom, made up of nSize bytes
+		std::cout << "scriptType = " << scriptType << "\n";
 		assert(scriptType == -1);
 		
 		// Convert nSize (vector of bytes)

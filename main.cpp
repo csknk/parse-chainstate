@@ -1,15 +1,51 @@
 #include <iomanip>
+#include <string>
+#include <unistd.h>
 #include "dbwrapper.h"
 #include "varint.h"
 
+static void showUsage(std::string name);
+
+enum class Mode { single, dump_all };
+
 int main(int argc, char* argv[])
 {
-//	DBWrapper db("chainstate-2");
-	DBWrapper db("mainnet-chainstate");
-	if (argc == 2 && strcmp(argv[1], "true") == 0) {
+	if (argc < 2) {
+		showUsage(argv[0]);
+	}
+
+	std::string sourceDB, txidHexString;
+	auto mode = Mode::single;
+	int opt;
+	while ((opt = getopt(argc, argv, "m:t:")) != -1) {
+		switch (opt) {
+			case 'm':
+				if (strcmp("single", optarg)) { mode = Mode::dump_all; }
+				break;
+			case 't':
+				txidHexString = std::string(optarg);
+				break;
+			default:
+				showUsage(argv[0]);
+		}
+	} 
+	
+	std::cout << "Mode is: " << (mode == Mode::single ? "single" : "dump_all") << "\n";
+	std::cout << "txid is: " << (txidHexString == "" ? "Not set." : txidHexString) << "\n";
+	std::cout << "There are " << argc - optind  << " remaining elements.\n";
+	std::cout << "db is: " << argv[optind] << "\n";
+
+	std::string dbPath(argv[optind]);
+	std::cout << "dbPath is: " << dbPath << "\n";
+
+	// Samity check - valid path supplied?
+	DBWrapper db(dbPath);
+	
+	if (mode == Mode::dump_all) {
 	       	db.printAllUTXOs();
 		return EXIT_SUCCESS;
 	}
+	
 	std::cout << "Enter a txid: ";
 	std::string txid;
 	std::cin >> txid;
@@ -35,3 +71,17 @@ int main(int argc, char* argv[])
 	
 	return EXIT_SUCCESS;
 }
+
+static void showUsage(std::string name)
+{
+    std::cerr << "Usage: " << name << " <option(s)> SOURCES\n"
+              << "Options:\n"
+              << "-h,--help\t\tShow this help message\n"
+              << "-m,--mode <mode>\t\"dump_all\" to dump all UTXOs, \"single\" for a single txid. "
+	      << "Default is \"single\".\n"
+	      << "-t, --txid <txid>\tHexstring representation of UTXO to lookup. "
+	      << "If mode is \"t\" and no txid is provided, user will be prompted to enter one."
+              << std::endl;
+    exit(EXIT_FAILURE);
+}
+
