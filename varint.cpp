@@ -89,7 +89,8 @@ void UTXO::setScriptPubKey()
 	inputValue.remainingBytesFromIndex((size_t) scriptStart, in);
 	
 	// There are 6 special script types. Outside these 6, the entire script is present
-	scriptType = nSize[0] < 6 ? nSize[0] : -1;
+//	scriptType = nSize[0] < 6 ? nSize[0] : -1;
+	scriptType = nSize[0] < 6 ? nSize[0] : 6;
 
 	switch(scriptType) {
 	case 0x00: // P2PKH Pay to Public Key Hash
@@ -121,6 +122,7 @@ void UTXO::setScriptPubKey()
 		break;
 //	case 0x04: // PKPK: upcoming data is an uncompressed public key (compressed for levelDB) [y=even]
 //	case 0x05: // PKPK: upcoming data is an uncompressed public key (compressed for levelDB) [y=odd]
+//		break;
 //		unsigned char vch[33] = {};
 //		vch[0] = scriptType - 2;
 //		memcpy(&vch[1], in.data(), 32);
@@ -135,7 +137,7 @@ void UTXO::setScriptPubKey()
 //		break;
 	default: // Upcoming script is custom, made up of nSize bytes
 		std::cout << "scriptType = " << scriptType << "\n";
-		assert(scriptType == -1);
+		assert(scriptType == 6);
 		
 		// Convert nSize (vector of bytes)
 		auto customScriptSize = utilities::toUint64(nSize) - 6;

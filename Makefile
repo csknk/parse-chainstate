@@ -8,7 +8,8 @@ OBJS_DIR = $(BIN_DIR)/objs
 EXTRAFLAGS = -no-pie
 #CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g
 # Don't compile with ASAN if using Valgrind...
-CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g -fsanitize=leak -fsanitize=address
+#CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g -fsanitize=leak -fsanitize=address
+CXXFLAGS = $(EXTRAFLAGS) $(WARNINGS) -std=c++17 -g 
 LDFLAGS = 
 LDLIBS = -lleveldb -lsnappy -lpthread 
 CXX = g++ ${CXXFLAGS}
