@@ -3,7 +3,15 @@
 
 DBWrapper::DBWrapper(std::string _dbName) : dbName(_dbName)
 {
-	openDB();
+	try {
+		openDB();
+	} catch (const std::invalid_argument& e) {
+		std::cerr << e.what() << '\n';
+		exit(EXIT_FAILURE);
+	} catch (const char* msg) {
+		std::cerr << msg << '\n';
+		exit(EXIT_FAILURE);
+	}
 	setObfuscationKey();
 }
 
@@ -37,6 +45,9 @@ void DBWrapper::openDB()
 	}
 	options.create_if_missing = false;
 	leveldb::Status status = leveldb::DB::Open(options, dbName, &db);
+	if (!status.ok()) {
+		throw "Can't open the specified database.";
+	}
 	readoptions.verify_checksums = true;
 }
 

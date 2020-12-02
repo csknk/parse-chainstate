@@ -1,12 +1,25 @@
 # Access Bitcoin UTXO Set With the Bitcoin Core chainstate Database 
 C++ project to access Bitcoin UTXO data by parsing the `chainstate` database.
 
-Usage
+Build
 -----
 * Clone this project
 * Run `make` in project root to build
-* Run `./bin/main` to lookup an individual UTXO: programme prompts for `txid` and `vout` on `stdin`.
-* Run `./bin/main true` to dump all UTXOs into CSV format on `stdout` (this will be a lengthy process)
+
+Usage
+-----
+`./bin/main <option(s)> <SOURCE DATABASE>`
+
+Options:
+* `-h,--help`: Show this help message
+* `-m,--mode <mode>`: `dump_all` to dump all UTXOs, `single` for a single txid. Default is `single`.
+* `-t, --txid <txid>`: Hexstring representation of UTXO to lookup. If mode is `t` and no txid is provided, user will be prompted to enter one.
+* `-o <vout>`: Output index of the required outpoint
+
+Examples:
+* Run `./bin/main <path to chainstate database>` to lookup an individual UTXO: programme prompts for `txid` and `vout` on `stdin`.
+* Run `./bin/main -m dump_all <path to chainstate database>` to dump all UTXOs into CSV format on `stdout` (this will be a lengthy process)
+* As above, redirect output to a file: `./bin/main -m dump_all <path to chainstate database> > path/results.csv`
 
 The `chainstate` database should be a copy, not currently being accessed by Bitcoin Core and it's location is currently hardcoded into `main.cpp`.
 

@@ -23,14 +23,20 @@ int main(int argc, char* argv[])
 	bool processOptions = true;
 
 	if (argc == 2) {
+		if (!strcmp("-h", argv[1])) {
+			showUsage(argv[0]);		
+		}
 		dbPath = std::string(argv[1]);
 		setOutpointData(txidHexString, vout);
 		processOptions = false;
 	}
 
 	int opt;
-	while (processOptions && (opt = getopt(argc, argv, "m:t:o:")) != -1) {
+	while (processOptions && (opt = getopt(argc, argv, "hm:t:o:")) != -1) {
 		switch (opt) {
+			case 'h':
+				showUsage(argv[0]);
+				break;
 			case 'm':
 				if (strcmp("single", optarg)) { mode = Mode::dump_all; }
 				break;
@@ -56,7 +62,7 @@ int main(int argc, char* argv[])
 	// dbPath is the first non-getopt argument
 	dbPath = processOptions ? argv[optind] : dbPath;
 
-	// @TODO - Sanity check - valid path supplied?
+	// Exception handling in class
 	DBWrapper db(dbPath);
 	
 	if (mode == Mode::dump_all) {
