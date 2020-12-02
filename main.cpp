@@ -6,6 +6,8 @@
 
 static void showUsage(std::string name);
 
+void setOutpointData(std::string& txidHexString, std::optional<uint32_t>& vout);
+
 enum class Mode { single, dump_all };
 
 int main(int argc, char* argv[])
@@ -15,9 +17,19 @@ int main(int argc, char* argv[])
 	}
 
 	std::string sourceDB, txidHexString;
+	std::optional<uint32_t> vout;
 	auto mode = Mode::single;
+	std::string dbPath;
+	bool processOptions = true;
+
+	if (argc == 2) {
+		dbPath = std::string(argv[1]);
+		setOutpointData(txidHexString, vout);
+		processOptions = false;
+	}
+
 	int opt;
-	while ((opt = getopt(argc, argv, "m:t:")) != -1) {
+	while (processOptions && (opt = getopt(argc, argv, "m:t:o:")) != -1) {
 		switch (opt) {
 			case 'm':
 				if (strcmp("single", optarg)) { mode = Mode::dump_all; }
@@ -25,20 +37,26 @@ int main(int argc, char* argv[])
 			case 't':
 				txidHexString = std::string(optarg);
 				break;
+			case 'o':
+				if (strcmp("0", optarg)) {
+					vout = static_cast<uint32_t>(std::stoul(std::string(optarg)));
+					if (vout == 0) {
+						std::cerr << "Unrecognized value for vout.\n";
+						showUsage(argv[0]);
+					}
+				} else {
+					vout = 0;
+				}
+				break;
 			default:
 				showUsage(argv[0]);
 		}
 	} 
 	
-	std::cout << "Mode is: " << (mode == Mode::single ? "single" : "dump_all") << "\n";
-	std::cout << "txid is: " << (txidHexString == "" ? "Not set." : txidHexString) << "\n";
-	std::cout << "There are " << argc - optind  << " remaining elements.\n";
-	std::cout << "db is: " << argv[optind] << "\n";
+	// dbPath is the first non-getopt argument
+	dbPath = processOptions ? argv[optind] : dbPath;
 
-	std::string dbPath(argv[optind]);
-	std::cout << "dbPath is: " << dbPath << "\n";
-
-	// Samity check - valid path supplied?
+	// @TODO - Sanity check - valid path supplied?
 	DBWrapper db(dbPath);
 	
 	if (mode == Mode::dump_all) {
@@ -46,30 +64,31 @@ int main(int argc, char* argv[])
 		return EXIT_SUCCESS;
 	}
 	
-	std::cout << "Enter a txid: ";
-	std::string txid;
-	std::cin >> txid;
-
-	std::cout << "Enter an output index: ";
-	uint32_t vout;
-	std::cin >> vout;
-
-	// DBWrapper::fetchRecord() is overloaded.
-	// Pass in a string or a std::vector<unsigned char>.
+	// DBWrapper::fetchRecord() is overloaded. Pass in a string or a std::vector<unsigned char>.
 	std::vector<unsigned char> valueBytes;
 	try {
-		db.fetchRecord(txid, vout, valueBytes);
+		db.fetchRecord(txidHexString, vout.value(), valueBytes);
 	}
 	catch (const std::invalid_argument& e) {
 		std::cerr << "Error. " << e.what() << "\n";
 		return	EXIT_FAILURE;
 	}
+	
 	// Initialise UTXO with a Varint constructed from a vector of bytes retrieved from the chainstate db. 
 	Varint v(valueBytes);
 	UTXO u(v);
 	std::cout << u << "\n";
-	
 	return EXIT_SUCCESS;
+}
+
+void setOutpointData(std::string& txidHexString, std::optional<uint32_t>& vout)
+{
+	std::cout << "Enter a txid: ";
+	std::cin >> txidHexString;
+	std::cout << "Enter an output index: ";
+	uint32_t tmp;
+	std::cin >> tmp;
+	vout.emplace(tmp);
 }
 
 static void showUsage(std::string name)
