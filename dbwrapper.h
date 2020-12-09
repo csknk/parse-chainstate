@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
+#include <filesystem>
 #include "leveldb/db.h"
 #include "varint.h"
 

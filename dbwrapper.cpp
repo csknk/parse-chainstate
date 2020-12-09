@@ -4,6 +4,7 @@
 DBWrapper::DBWrapper(std::string _dbName) : dbName(_dbName)
 {
 	try {
+		options = leveldb::Options();
 		openDB();
 	} catch (const std::invalid_argument& e) {
 		std::cerr << e.what() << '\n';
@@ -43,7 +44,17 @@ void DBWrapper::openDB()
 	if (dbName.empty()) {
 		throw std::invalid_argument{"No database specified in DBWrapper::openDB()"};
 	}
-	options.create_if_missing = false;
+
+	// Check that the provided path exists and do a rudimentary check that it is a leveldb database.
+	// If a levelDB database does not exist at the provided path, levelDB still creates a directory and
+	// adds a LOG and LOCK file before exiting.
+	// This is the case even if `options.create_if_missing` is set `false` (the default value)
+	std::filesystem::path p = dbName;
+	p.append("LOG");
+	if (!std::filesystem::exists(p)) {
+		throw "The provided path is not a LevelDB database.";
+	}
+	
 	leveldb::Status status = leveldb::DB::Open(options, dbName, &db);
 	if (!status.ok()) {
 		throw "Can't open the specified database.";
